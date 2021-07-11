@@ -4,6 +4,9 @@ module.exports = Network;
 /* Imports */
 const config = require('../config');
 const methods = require('../methods/methods');
+const multi = require('../multithreading/multi');
+const Neat = require('../neat');
+const Connection = require('./connection');
 
 /* Easier letiable naming */
 let mutation = methods.mutation;
@@ -820,5 +823,554 @@ class Network {
 		}
 
 		return json;
+	}
+
+	/* Sets the value of a property for every node in this network */
+	set(values) {
+		for (let i = 0; i < this.nodes.length; i++) {
+			this.nodes[i].bias = values.bias || this.nodes[i].bias;
+			this.nodes[i].squash = values.squash || this.nodes[i].squash;
+		}
+	}
+
+	/* Evolves the network to reach a lower error on a dataset */
+	async evolve(set, options) {
+		if (set[0].input.length !== this.input || set[0].output.length !== this.output) {
+			throw new Error('Dataset input/output size should be same as network input/output size!');
+		}
+
+		/* Read the options */
+		options = options || {};
+		let targetError = typeof options.error !== 'undefined' ? options.error : 0.05;
+		let growth = typeof options.growth !== 'undefined' ? options.growth : 0.0001;
+		let cost = options.cost || methods.cost.MSE;
+		let amount = options.amount || 1;
+
+		let threads = options.threads;
+		if (typeof threads === 'undefined') {
+			if (typeof window === 'undefined') {
+				/* Node.js */
+				threads = require('os').cpus().length;
+			} else {
+				/* Browser */
+				threads = navigator.hardwareConcurrency;
+			}
+		}
+
+		let start = Date.now();
+
+		if (typeof options.iterations === 'undefined' && typeof options.error === 'undefined') {
+			throw new Error('At least one of the following options must be specified: error, iterations');
+		} else if (typeof options.error === 'undefined') {
+			/* run until iterations */
+			targetError = -1;
+		} else if (typeof options.iterations === 'undefined') {
+			/* run until target error */
+			options.iterations = 0;
+		}
+
+		let fitnessFunction;
+		if (threads === 1) {
+			/* Create the fitness function */
+			fitnessFunction = function (genome) {
+				let score = 0;
+				for (let i = 0; i < amount; i++) {
+					score -= genome.test(set, cost).error;
+				}
+
+				score -=
+					(genome.nodes.length -
+						genome.input -
+						genome.output +
+						genome.connections.length +
+						genome.gates.length) *
+					growth;
+				/* this can cause problems with fitness proportionate selection */
+				score = isNaN(score) ? -Infinity : score;
+
+				return score / amount;
+			};
+		} else {
+			/* Serialize the dataset */
+			let converted = multi.serializeDataSet(set);
+
+			/* Create workers, send datasets */
+			var workers = [];
+			if (typeof window === 'undefined') {
+				for (let i = 0; i < threads; i++) {
+					workers.push(new multi.workers.node.TestWorker(converted, cost));
+				}
+			} else {
+				for (let i = 0; i < threads; i++) {
+					workers.push(new multi.workers.browser.TestWorker(converted, cost));
+				}
+			}
+
+			fitnessFunction = function (population) {
+				/* eslint-disable no-unused-vars */
+				return new Promise((resolve, reject) => {
+					/* eslint-enable no-unused-vars */
+					/* Create a queue */
+					var queue = population.slice();
+					var done = 0;
+
+					/* Start worker function */
+					var startWorker = function (worker) {
+						if (!queue.length) {
+							if (++done === threads) resolve();
+							return;
+						}
+
+						var genome = queue.shift();
+
+						worker.evaluate(genome).then(function (result) {
+							genome.score = -result;
+							genome.score -=
+								(genome.nodes.length -
+									genome.input -
+									genome.output +
+									genome.connections.length +
+									genome.gates.length) *
+								growth;
+							genome.score = isNaN(parseFloat(result)) ? -Infinity : genome.score;
+							startWorker(worker);
+						});
+					};
+
+					for (var i = 0; i < workers.length; i++) {
+						startWorker(workers[i]);
+					}
+				});
+			};
+
+			options.fitnessPopulation = true;
+		}
+
+		/* Intialise the NEAT instance */
+		options.network = this;
+		var neat = new Neat(this.input, this.output, fitnessFunction, options);
+
+		var error = -Infinity;
+		var bestFitness = -Infinity;
+		var bestGenome;
+
+		while (
+			error < -targetError &&
+			(options.iterations === 0 || neat.generation < options.iterations)
+		) {
+			let fittest = await neat.evolve();
+			let fitness = fittest.score;
+			error =
+				fitness +
+				(fittest.nodes.length -
+					fittest.input -
+					fittest.output +
+					fittest.connections.length +
+					fittest.gates.length) *
+					growth;
+
+			if (fitness > bestFitness) {
+				bestFitness = fitness;
+				bestGenome = fittest;
+			}
+
+			if (options.log && neat.generation % options.log === 0) {
+				console.log('iteration', neat.generation, 'fitness', fitness, 'error', -error);
+			}
+
+			if (options.schedule && neat.generation % options.schedule.iterations === 0) {
+				options.schedule.function({ fitness: fitness, error: -error, iteration: neat.generation });
+			}
+		}
+
+		if (threads > 1) {
+			for (var i = 0; i < workers.length; i++) workers[i].terminate();
+		}
+
+		if (typeof bestGenome !== 'undefined') {
+			this.nodes = bestGenome.nodes;
+			this.connections = bestGenome.connections;
+			this.selfconns = bestGenome.selfconns;
+			this.gates = bestGenome.gates;
+
+			if (options.clear) this.clear();
+		}
+
+		return {
+			error: -error,
+			iterations: neat.generation,
+			time: Date.now() - start
+		};
+	}
+
+	/**
+	 * Creates a standalone function of the network which can be run without the
+	 * need of a library
+	 */
+	standalone() {
+		const present = [];
+		const activations = [];
+		const states = [];
+		const lines = [];
+		const functions = [];
+
+		let i;
+		for (i = 0; i < this.input; i++) {
+			let node = this.nodes[i];
+			activations.push(node.activation);
+			states.push(node.state);
+		}
+
+		lines.push('for(var i = 0; i < input.length; i++) A[i] = input[i];');
+
+		/* So we don't have to use expensive .indexOf() */
+		for (i = 0; i < this.nodes.length; i++) {
+			this.nodes[i].index = i;
+		}
+
+		for (i = this.input; i < this.nodes.length; i++) {
+			let node = this.nodes[i];
+			activations.push(node.activation);
+			states.push(node.state);
+
+			let functionIndex = present.indexOf(node.squash.name);
+
+			if (functionIndex === -1) {
+				functionIndex = present.length;
+				present.push(node.squash.name);
+				functions.push(node.squash.toString());
+			}
+
+			const incoming = [];
+			for (let j = 0; j < node.connections.in.length; j++) {
+				let conn = node.connections.in[j];
+				let computation = `A[${conn.from.index}] * ${conn.weight}`;
+
+				if (conn.gater != null) {
+					computation += ` * A[${conn.gater.index}]`;
+				}
+
+				incoming.push(computation);
+			}
+
+			if (node.connections.self.weight) {
+				let conn = node.connections.self;
+				let computation = `S[${i}] * ${conn.weight}`;
+
+				if (conn.gater != null) {
+					computation += ` * A[${conn.gater.index}]`;
+				}
+
+				incoming.push(computation);
+			}
+
+			let line1 = `S[${i}] = ${incoming.join(' + ')} + ${node.bias};`;
+			let line2 = `A[${i}] = F[${functionIndex}](S[${i}])${!node.mask ? ' * ' + node.mask : ''};`;
+			lines.push(line1);
+			lines.push(line2);
+		}
+
+		var output = [];
+		for (i = this.nodes.length - this.output; i < this.nodes.length; i++) {
+			output.push(`A[${i}]`);
+		}
+
+		output = `return [${output.join(',')}];`;
+		lines.push(output);
+
+		let total = '';
+		total += `var F = [${functions.toString()}];\r\n`;
+		total += `var A = [${activations.toString()}];\r\n`;
+		total += `var S = [${states.toString()}];\r\n`;
+		total += `function activate(input){\r\n${lines.join('\r\n')}\r\n}`;
+
+		return total;
+	}
+
+	/* Serialize to send to workers efficiently */
+	serialize() {
+		const activations = [];
+		const states = [];
+		const conns = [];
+		const squashes = [
+			'LOGISTIC',
+			'TANH',
+			'IDENTITY',
+			'STEP',
+			'RELU',
+			'SOFTSIGN',
+			'SINUSOID',
+			'GAUSSIAN',
+			'BENT_IDENTITY',
+			'BIPOLAR',
+			'BIPOLAR_SIGMOID',
+			'HARD_TANH',
+			'ABSOLUTE',
+			'INVERSE',
+			'SELU'
+		];
+
+		conns.push(this.input);
+		conns.push(this.output);
+
+		let i;
+		for (i = 0; i < this.nodes.length; i++) {
+			let node = this.nodes[i];
+			node.index = i;
+			activations.push(node.activation);
+			states.push(node.state);
+		}
+
+		for (i = this.input; i < this.nodes.length; i++) {
+			let node = this.nodes[i];
+			conns.push(node.index);
+			conns.push(node.bias);
+			conns.push(squashes.indexOf(node.squash.name));
+
+			conns.push(node.connections.self.weight);
+			conns.push(node.connections.self.gater == null ? -1 : node.connections.self.gater.index);
+
+			for (var j = 0; j < node.connections.in.length; j++) {
+				let conn = node.connections.in[j];
+
+				conns.push(conn.from.index);
+				conns.push(conn.weight);
+				conns.push(conn.gater == null ? -1 : conn.gater.index);
+			}
+
+			conns.push(-2); // stop token -> next node
+		}
+
+		return [activations, states, conns];
+	}
+
+	/* Convert a json object to a network */
+	static fromJson(json) {
+		let network = new Network(json.input, json.output);
+		network.dropout = json.dropout;
+		network.nodes = [];
+		network.connections = [];
+
+		let i;
+		for (i = 0; i < json.nodes.length; i++) {
+			network.nodes.push(Node.fromJSON(json.nodes[i]));
+		}
+
+		for (i = 0; i < json.connections.length; i++) {
+			var conn = json.connections[i];
+
+			var connection = network.connect(network.nodes[conn.from], network.nodes[conn.to])[0];
+			connection.weight = conn.weight;
+
+			if (conn.gater != null) {
+				network.gate(network.nodes[conn.gater], connection);
+			}
+		}
+
+		return network;
+	}
+
+	/* Merge two networks into one */
+	static merge(network1, network2) {
+		/* Create a copy of the networks */
+		network1 = Network.fromJSON(network1.toJSON());
+		network2 = Network.fromJSON(network2.toJSON());
+
+		/* Check if output and input size are the same */
+		if (network1.output !== network2.input) {
+			throw new Error('Output size of network1 should be the same as the input size of network2!');
+		}
+
+		/* Redirect all connections from network2 input from network1 output */
+		let i;
+		for (i = 0; i < network2.connections.length; i++) {
+			let conn = network2.connections[i];
+			if (conn.from.type === 'input') {
+				let index = network2.nodes.indexOf(conn.from);
+
+				/* redirect */
+				conn.from = network1.nodes[network1.nodes.length - 1 - index];
+			}
+		}
+
+		/* Delete input nodes of network2 */
+		for (i = network2.input - 1; i >= 0; i--) {
+			network2.nodes.splice(i, 1);
+		}
+
+		/* Change the node type of network1's output nodes (now hidden) */
+		for (i = network1.nodes.length - network1.output; i < network1.nodes.length; i++) {
+			network1.nodes[i].type = 'hidden';
+		}
+
+		/* Create one network from both networks */
+		network1.connections = network1.connections.concat(network2.connections);
+		network1.nodes = network1.nodes.concat(network2.nodes);
+
+		return network1;
+	}
+
+	/* Create an offspring from two parent networks */
+	static crossover(network1, network2, equal) {
+		if (network1.input !== network2.input || network1.output !== network2.output) {
+			throw new Error("Networks don't have the same input/output size!");
+		}
+
+		/* Initialise offspring */
+		let offspring = new Network(network1.input, network1.output);
+		offspring.connections = [];
+		offspring.nodes = [];
+
+		/* Save scores and create a copy */
+		let score1 = network1.score || 0;
+		let score2 = network2.score || 0;
+
+		/* Determine offspring node size */
+		let size;
+		if (equal || score1 === score2) {
+			let max = Math.max(network1.nodes.length, network2.nodes.length);
+			let min = Math.min(network1.nodes.length, network2.nodes.length);
+			size = Math.floor(Math.random() * (max - min + 1) + min);
+		} else if (score1 > score2) {
+			size = network1.nodes.length;
+		} else {
+			size = network2.nodes.length;
+		}
+
+		/* Rename some variables for easier reading */
+		let outputSize = network1.output;
+
+		/* Set indexes so we don't need indexOf */
+		let i;
+		for (i = 0; i < network1.nodes.length; i++) {
+			network1.nodes[i].index = i;
+		}
+
+		for (i = 0; i < network2.nodes.length; i++) {
+			network2.nodes[i].index = i;
+		}
+
+		/* Assign nodes from parents to offspring */
+		for (i = 0; i < size; i++) {
+			/* Determine if an output node is needed */
+			let node;
+			if (i < size - outputSize) {
+				let random = Math.random();
+				node = random >= 0.5 ? network1.nodes[i] : network2.nodes[i];
+				let other = random < 0.5 ? network1.nodes[i] : network2.nodes[i];
+
+				if (typeof node === 'undefined' || node.type === 'output') {
+					node = other;
+				}
+			} else {
+				if (Math.random() >= 0.5) {
+					node = network1.nodes[network1.nodes.length + i - size];
+				} else {
+					node = network2.nodes[network2.nodes.length + i - size];
+				}
+			}
+
+			var newNode = new Node();
+			newNode.bias = node.bias;
+			newNode.squash = node.squash;
+			newNode.type = node.type;
+
+			offspring.nodes.push(newNode);
+		}
+		/* Create arrays of connection genes */
+		var n1conns = {};
+		var n2conns = {};
+
+		/* Normal connections */
+		for (i = 0; i < network1.connections.length; i++) {
+			let conn = network1.connections[i];
+			let data = {
+				weight: conn.weight,
+				from: conn.from.index,
+				to: conn.to.index,
+				gater: conn.gater != null ? conn.gater.index : -1
+			};
+			n1conns[Connection.innovationID(data.from, data.to)] = data;
+		}
+
+		/* Selfconnections */
+		for (i = 0; i < network1.selfconns.length; i++) {
+			let conn = network1.selfconns[i];
+			let data = {
+				weight: conn.weight,
+				from: conn.from.index,
+				to: conn.to.index,
+				gater: conn.gater != null ? conn.gater.index : -1
+			};
+			n1conns[Connection.innovationID(data.from, data.to)] = data;
+		}
+
+		/* Normal connections */
+		for (i = 0; i < network2.connections.length; i++) {
+			let conn = network2.connections[i];
+			let data = {
+				weight: conn.weight,
+				from: conn.from.index,
+				to: conn.to.index,
+				gater: conn.gater != null ? conn.gater.index : -1
+			};
+			n2conns[Connection.innovationID(data.from, data.to)] = data;
+		}
+
+		/* Selfconnections */
+		for (i = 0; i < network2.selfconns.length; i++) {
+			let conn = network2.selfconns[i];
+			let data = {
+				weight: conn.weight,
+				from: conn.from.index,
+				to: conn.to.index,
+				gater: conn.gater != null ? conn.gater.index : -1
+			};
+			n2conns[Connection.innovationID(data.from, data.to)] = data;
+		}
+
+		/* Split common conn genes from disjoint or excess conn genes */
+		const connections = [];
+		let keys1 = Object.keys(n1conns);
+		let keys2 = Object.keys(n2conns);
+		for (i = keys1.length - 1; i >= 0; i--) {
+			/* Common gene */
+			if (typeof n2conns[keys1[i]] !== 'undefined') {
+				let conn = Math.random() >= 0.5 ? n1conns[keys1[i]] : n2conns[keys1[i]];
+				connections.push(conn);
+
+				/* Because deleting is expensive, just set it to some value */
+				n2conns[keys1[i]] = undefined;
+			} else if (score1 >= score2 || equal) {
+				connections.push(n1conns[keys1[i]]);
+			}
+		}
+
+		/* Excess/disjoint gene */
+		if (score2 >= score1 || equal) {
+			for (i = 0; i < keys2.length; i++) {
+				if (typeof n2conns[keys2[i]] !== 'undefined') {
+					connections.push(n2conns[keys2[i]]);
+				}
+			}
+		}
+
+		/* Add common conn genes uniformly */
+		for (i = 0; i < connections.length; i++) {
+			let connData = connections[i];
+			if (connData.to < size && connData.from < size) {
+				let from = offspring.nodes[connData.from];
+				let to = offspring.nodes[connData.to];
+				let conn = offspring.connect(from, to)[0];
+
+				conn.weight = connData.weight;
+
+				if (connData.gater !== -1 && connData.gater < size) {
+					offspring.gate(offspring.nodes[connData.gater], conn);
+				}
+			}
+		}
+
+		return offspring;
 	}
 }
