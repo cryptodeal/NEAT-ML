@@ -26,7 +26,8 @@ module.exports = {
 		fallback: {
 			assert: require.resolve('assert'),
 			util: require.resolve('util'),
-			console: require.resolve('console-browserify')
+			console: require.resolve('console-browserify'),
+			path: require.resolve('path-browserify')
 		}
 	},
 	output: {
