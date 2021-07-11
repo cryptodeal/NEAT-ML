@@ -2,14 +2,17 @@
   "name": "neat-ml",
   "version": "0.0.1",
   "description": "Neuroevolution of Augmenting Topologies implemented in javascript. Inspired by Neataptic and other unmaintained implementations of NEAT, but intended to leverage existing ML libraries like tensorflow.js, brain.js, or ML5.js in order to leverage their performance advantage.",
-  "main": "src/neat-ml.js",
+  "main": "./src/neatml.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint '*/**/*.{js,ts,tsx}' --ignore-path .gitignore --fix"
+    "lint": "eslint '*/**/*.{js,ts,tsx}' --ignore-path .gitignore --fix",
+    "build:dist": "webpack",
+    "build": "npm run build:dist"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
-      "eslint '*/**/*.{js,ts,tsx}' --ignore-path .gitignore --fix", "git add"
+      "eslint '*/**/*.{js,ts,tsx}' --ignore-path .gitignore --fix",
+      "git add"
     ]
   },
   "husky": {
@@ -31,11 +34,17 @@
     "@babel/core": "^7.14.6",
     "@babel/eslint-parser": "^7.14.7",
     "@babel/preset-env": "^7.14.7",
+    "assert": "^2.0.0",
+    "console-browserify": "^1.2.0",
+    "copy-webpack-plugin": "^9.0.1",
     "eslint": "^7.30.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
     "husky": "^7.0.1",
     "lint-staged": "^11.0.0",
-    "prettier": "^2.3.2"
+    "prettier": "^2.3.2",
+    "util": "^0.12.4",
+    "webpack": "^5.44.0",
+    "webpack-cli": "^4.7.2"
   }
 }
