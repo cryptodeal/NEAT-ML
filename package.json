@@ -4,22 +4,25 @@
   "description": "Neuroevolution of Augmenting Topologies implemented in javascript. Inspired by Neataptic and other unmaintained implementations of NEAT, but intended to leverage existing ML libraries like tensorflow.js, brain.js, or ML5.js in order to leverage their performance advantage.",
   "main": "index.js",
   "scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
-		"lint": "eslint '*/**/*.{js,ts,tsx}' --ignore-path .gitignore --quiet --fix"
-	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged"
-		}
-	},
-	"lint-staged": {
-		"*.{js,ts,tsx}": [
-			"eslint --fix"
-		]
-	},
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint '*/**/*.{js,ts,tsx}' --ignore-path .gitignore --quiet --fix"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "eslint --fix"
+    ]
+  },
   "author": "cryptodeal",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@babel/core": "^7.14.6",
+    "@babel/eslint-parser": "^7.14.7",
+    "@babel/preset-env": "^7.14.7",
     "eslint": "^7.30.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",

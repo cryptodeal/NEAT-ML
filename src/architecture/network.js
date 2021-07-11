@@ -324,12 +324,501 @@ class Network {
 			}
 
 			case mutation.MOD_BIAS: {
-				/* Has no effect on input node, so they are excluded */
+				/* no effect on input nodes, so they are excluded */
 				let index = Math.floor(Math.random() * (this.nodes.length - this.input) + this.input);
 				let node = this.nodes[index];
 				node.mutate(method);
 				break;
 			}
+
+			case mutation.MOD_ACTIVATION: {
+				/* no effect on input nodes, so they are excluded */
+				if (!method.mutateOutput && this.input + this.output === this.nodes.length) {
+					if (config.warnings) console.warn('No nodes that allow mutation of activation function');
+					break;
+				}
+
+				let idx = Math.floor(
+					Math.random() *
+						(this.nodes.length - (method.mutateOutput ? 0 : this.output) - this.input) +
+						this.input
+				);
+				let node = this.nodes[idx];
+
+				node.mutate(method);
+				break;
+			}
+
+			case mutation.ADD_SELF_CONN: {
+				/* Check which nodes aren't selfconnected yet */
+				let possible = [];
+				for (i = this.input; i < this.nodes.length; i++) {
+					let node = this.nodes[i];
+					if (node.connections.self.weight === 0) {
+						possible.push(node);
+					}
+				}
+
+				if (possible.length === 0) {
+					if (config.warnings) console.warn('No more self-connections to add!');
+					break;
+				}
+
+				/* Select a random node */
+				let node = possible[Math.floor(Math.random() * possible.length)];
+
+				/* Connect it to himself */
+				this.connect(node, node);
+				break;
+			}
+
+			case mutation.SUB_SELF_CONN: {
+				if (this.selfconns.length === 0) {
+					if (config.warnings) console.warn('No more self-connections to remove!');
+					break;
+				}
+				let conn = this.selfconns[Math.floor(Math.random() * this.selfconns.length)];
+				this.disconnect(conn.from, conn.to);
+				break;
+			}
+
+			case mutation.ADD_GATE: {
+				let allconnections = this.connections.concat(this.selfconns);
+
+				/* Create a list of all non-gated connections */
+				let possible = [];
+				for (i = 0; i < allconnections.length; i++) {
+					let conn = allconnections[i];
+					if (conn.gater === null) {
+						possible.push(conn);
+					}
+				}
+
+				if (possible.length === 0) {
+					if (config.warnings) console.warn('No more connections to gate!');
+					break;
+				}
+
+				/* Select a random gater node and connection, can't be gated by input */
+				let index = Math.floor(Math.random() * (this.nodes.length - this.input) + this.input);
+				let node = this.nodes[index];
+				let conn = possible[Math.floor(Math.random() * possible.length)];
+
+				/* Gate the connection with the node */
+				this.gate(node, conn);
+				break;
+			}
+
+			case mutation.SUB_GATE: {
+				/* Select a random gated connection */
+				if (this.gates.length === 0) {
+					if (config.warnings) console.warn('No more connections to ungate!');
+					break;
+				}
+
+				let idx = Math.floor(Math.random() * this.gates.length);
+				let gatedconn = this.gates[idx];
+
+				this.ungate(gatedconn);
+				break;
+			}
+
+			case mutation.ADD_BACK_CONN: {
+				/* Create an array of all uncreated (backfed) connections */
+				let available = [];
+				for (i = this.input; i < this.nodes.length; i++) {
+					let node1 = this.nodes[i];
+					for (j = this.input; j < i; j++) {
+						let node2 = this.nodes[j];
+						if (!node1.isProjectingTo(node2)) available.push([node1, node2]);
+					}
+				}
+
+				if (available.length === 0) {
+					if (config.warnings) console.warn('No more connections to be made!');
+					break;
+				}
+
+				let pair = available[Math.floor(Math.random() * available.length)];
+				this.connect(pair[0], pair[1]);
+				break;
+			}
+
+			case mutation.SUB_BACK_CONN: {
+				/* List of possible connections that can be removed */
+				let possible = [];
+
+				for (i = 0; i < this.connections.length; i++) {
+					let conn = this.connections[i];
+					/* Check if it is not disabling a node */
+					if (
+						conn.from.connections.out.length > 1 &&
+						conn.to.connections.in.length > 1 &&
+						this.nodes.indexOf(conn.from) > this.nodes.indexOf(conn.to)
+					) {
+						possible.push(conn);
+					}
+				}
+
+				if (possible.length === 0) {
+					if (config.warnings) console.warn('No connections to remove!');
+					break;
+				}
+
+				let randomConn = possible[Math.floor(Math.random() * possible.length)];
+				this.disconnect(randomConn.from, randomConn.to);
+				break;
+			}
+
+			case mutation.SWAP_NODES: {
+				/* no effect on input nodes, so they are excluded */
+				if (
+					(method.mutateOutput && this.nodes.length - this.input < 2) ||
+					(!method.mutateOutput && this.nodes.length - this.input - this.output < 2)
+				) {
+					if (config.warnings)
+						console.warn('No nodes that allow swapping of bias and activation function');
+					break;
+				}
+
+				let idx = Math.floor(
+					Math.random() *
+						(this.nodes.length - (method.mutateOutput ? 0 : this.output) - this.input) +
+						this.input
+				);
+				let node1 = this.nodes[idx];
+				idx = Math.floor(
+					Math.random() *
+						(this.nodes.length - (method.mutateOutput ? 0 : this.output) - this.input) +
+						this.input
+				);
+				let node2 = this.nodes[idx];
+
+				let biasTemp = node1.bias;
+				let squashTemp = node1.squash;
+
+				node1.bias = node2.bias;
+				node1.squash = node2.squash;
+				node2.bias = biasTemp;
+				node2.squash = squashTemp;
+				break;
+			}
 		}
+	}
+
+	/* Train the given set to this network */
+	train(set, options) {
+		if (set[0].input.length !== this.input || set[0].output.length !== this.output) {
+			throw new Error('Dataset input/output size should be same as network input/output size!');
+		}
+
+		options = options || {};
+
+		/* Warning messages */
+		if (typeof options.rate === 'undefined') {
+			if (config.warnings) console.warn('Using default learning rate, please define a rate!');
+		}
+		if (typeof options.iterations === 'undefined') {
+			if (config.warnings)
+				console.warn('No target iterations given, running until error is reached!');
+		}
+
+		/* Read the options */
+		var targetError = options.error || 0.05;
+		var cost = options.cost || methods.cost.MSE;
+		var baseRate = options.rate || 0.3;
+		var dropout = options.dropout || 0;
+		var momentum = options.momentum || 0;
+		/* online learning */
+		var batchSize = options.batchSize || 1;
+		var ratePolicy = options.ratePolicy || methods.rate.FIXED();
+
+		var start = Date.now();
+
+		if (batchSize > set.length) {
+			throw new Error('Batch size must be smaller or equal to dataset length!');
+		} else if (typeof options.iterations === 'undefined' && typeof options.error === 'undefined') {
+			throw new Error('At least one of the following options must be specified: error, iterations');
+		} else if (typeof options.error === 'undefined') {
+			/* run until iterations */
+			targetError = -1;
+		} else if (typeof options.iterations === 'undefined') {
+			/* run until target error */
+			options.iterations = 0;
+		}
+
+		/* Save to network */
+		this.dropout = dropout;
+
+		if (options.crossValidate) {
+			let numTrain = Math.ceil((1 - options.crossValidate.testSize) * set.length);
+			var trainSet = set.slice(0, numTrain);
+			var testSet = set.slice(numTrain);
+		}
+
+		/* Loop the training process */
+		var currentRate = baseRate;
+		var iteration = 0;
+		var error = 1;
+
+		var i, j, x;
+		while (error > targetError && (options.iterations === 0 || iteration < options.iterations)) {
+			if (options.crossValidate && error <= options.crossValidate.testError) break;
+
+			iteration++;
+
+			/* Update the rate */
+			currentRate = ratePolicy(baseRate, iteration);
+
+			/* Checks if cross validation is enabled */
+			if (options.crossValidate) {
+				this.#trainSet(trainSet, batchSize, currentRate, momentum, cost);
+				if (options.clear) this.clear();
+				error = this.test(testSet, cost).error;
+				if (options.clear) this.clear();
+			} else {
+				error = this.#trainSet(set, batchSize, currentRate, momentum, cost);
+				if (options.clear) this.clear();
+			}
+
+			/* Checks for options such as scheduled logs and shuffling */
+			if (options.shuffle) {
+				for (
+					j, x, i = set.length;
+					i;
+					j = Math.floor(Math.random() * i), x = set[--i], set[i] = set[j], set[j] = x
+				);
+			}
+
+			if (options.log && iteration % options.log === 0) {
+				console.log('iteration', iteration, 'error', error, 'rate', currentRate);
+			}
+
+			if (options.schedule && iteration % options.schedule.iterations === 0) {
+				options.schedule.function({ error: error, iteration: iteration });
+			}
+		}
+
+		if (options.clear) this.clear();
+
+		if (dropout) {
+			for (i = 0; i < this.nodes.length; i++) {
+				if (this.nodes[i].type === 'hidden' || this.nodes[i].type === 'constant') {
+					this.nodes[i].mask = 1 - this.dropout;
+				}
+			}
+		}
+
+		return {
+			error: error,
+			iterations: iteration,
+			time: Date.now() - start
+		};
+	}
+
+	/**
+	 * Performs one training epoch and returns the error
+	 * private function used in this.train
+	 */
+	#trainSet(set, batchSize, currentRate, momentum, costFunction) {
+		let errorSum = 0;
+		for (let i = 0; i < set.length; i++) {
+			let input = set[i].input;
+			let target = set[i].output;
+
+			let update = !!((i + 1) % batchSize === 0 || i + 1 === set.length);
+
+			let output = this.activate(input, true);
+			this.propagate(currentRate, momentum, update, target);
+
+			errorSum += costFunction(target, output);
+		}
+		return errorSum / set.length;
+	}
+
+	/* Tests a set and returns the error and elapsed time */
+	test(set, cost = methods.cost.MSE) {
+		/* Check if dropout is enabled, set correct mask */
+		let i;
+		if (this.dropout) {
+			for (i = 0; i < this.nodes.length; i++) {
+				if (this.nodes[i].type === 'hidden' || this.nodes[i].type === 'constant') {
+					this.nodes[i].mask = 1 - this.dropout;
+				}
+			}
+		}
+
+		let error = 0;
+		let start = Date.now();
+
+		for (i = 0; i < set.length; i++) {
+			let input = set[i].input;
+			let target = set[i].output;
+			let output = this.noTraceActivate(input);
+			error += cost(target, output);
+		}
+
+		error /= set.length;
+
+		let results = {
+			error: error,
+			time: Date.now() - start
+		};
+
+		return results;
+	}
+
+	/* creates a json that can be used to create a graph with d3 and webcola */
+	graph(width, height) {
+		let input = 0;
+		let output = 0;
+
+		let json = {
+			nodes: [],
+			links: [],
+			constraints: [
+				{
+					type: 'alignment',
+					axis: 'x',
+					offsets: []
+				},
+				{
+					type: 'alignment',
+					axis: 'y',
+					offsets: []
+				}
+			]
+		};
+
+		let i;
+		for (i = 0; i < this.nodes.length; i++) {
+			let node = this.nodes[i];
+
+			if (node.type === 'input') {
+				if (this.input === 1) {
+					json.constraints[0].offsets.push({
+						node: i,
+						offset: 0
+					});
+				} else {
+					json.constraints[0].offsets.push({
+						node: i,
+						offset: ((0.8 * width) / (this.input - 1)) * input++
+					});
+				}
+				json.constraints[1].offsets.push({
+					node: i,
+					offset: 0
+				});
+			} else if (node.type === 'output') {
+				if (this.output === 1) {
+					json.constraints[0].offsets.push({
+						node: i,
+						offset: 0
+					});
+				} else {
+					json.constraints[0].offsets.push({
+						node: i,
+						offset: ((0.8 * width) / (this.output - 1)) * output++
+					});
+				}
+				json.constraints[1].offsets.push({
+					node: i,
+					offset: -0.8 * height
+				});
+			}
+
+			json.nodes.push({
+				id: i,
+				name: node.type === 'hidden' ? node.squash.name : node.type.toUpperCase(),
+				activation: node.activation,
+				bias: node.bias
+			});
+		}
+
+		let connections = this.connections.concat(this.selfconns);
+		for (i = 0; i < connections.length; i++) {
+			let connection = connections[i];
+			if (connection.gater == null) {
+				json.links.push({
+					source: this.nodes.indexOf(connection.from),
+					target: this.nodes.indexOf(connection.to),
+					weight: connection.weight
+				});
+			} else {
+				/* Add a gater 'node' */
+				let index = json.nodes.length;
+				json.nodes.push({
+					id: index,
+					activation: connection.gater.activation,
+					name: 'GATE'
+				});
+				json.links.push({
+					source: this.nodes.indexOf(connection.from),
+					target: index,
+					weight: (1 / 2) * connection.weight
+				});
+				json.links.push({
+					source: index,
+					target: this.nodes.indexOf(connection.to),
+					weight: (1 / 2) * connection.weight
+				});
+				json.links.push({
+					source: this.nodes.indexOf(connection.gater),
+					target: index,
+					weight: connection.gater.activation,
+					gate: true
+				});
+			}
+		}
+
+		return json;
+	}
+
+	/* Convert the network to a json object */
+	toJSON() {
+		let json = {
+			nodes: [],
+			connections: [],
+			input: this.input,
+			output: this.output,
+			dropout: this.dropout
+		};
+
+		// So we don't have to use expensive .indexOf()
+		let i;
+		for (i = 0; i < this.nodes.length; i++) {
+			this.nodes[i].index = i;
+		}
+
+		for (i = 0; i < this.nodes.length; i++) {
+			let node = this.nodes[i];
+			let tojson = node.toJSON();
+			tojson.index = i;
+			json.nodes.push(tojson);
+
+			if (node.connections.self.weight !== 0) {
+				let tojson = node.connections.self.toJSON();
+				tojson.from = i;
+				tojson.to = i;
+
+				tojson.gater =
+					node.connections.self.gater != null ? node.connections.self.gater.index : null;
+				json.connections.push(tojson);
+			}
+		}
+
+		for (i = 0; i < this.connections.length; i++) {
+			let conn = this.connections[i];
+			let tojson = conn.toJSON();
+			tojson.from = conn.from.index;
+			tojson.to = conn.to.index;
+
+			tojson.gater = conn.gater != null ? conn.gater.index : null;
+
+			json.connections.push(tojson);
+		}
+
+		return json;
 	}
 }
