@@ -150,7 +150,8 @@ const architect = () => ({
 			outputLayer = new Group(last);
 			last = {};
 		} else {
-			outputLayer = new Group(args.pop()); // last argument
+			/* last argument */
+			outputLayer = new Group(args.pop());
 		}
 
 		outputLayer.set({

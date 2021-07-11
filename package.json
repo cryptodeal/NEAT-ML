@@ -17,8 +17,16 @@
       "pre-commit": "lint-staged"
     }
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cryptodeal/NEAT-ML.git"
+  },
   "author": "cryptodeal",
   "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/cryptodeal/NEAT-ML/issues"
+  },
+  "homepage": "https://github.com/cryptodeal/NEAT-ML",
   "devDependencies": {
     "@babel/core": "^7.14.6",
     "@babel/eslint-parser": "^7.14.7",

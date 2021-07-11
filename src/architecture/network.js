@@ -200,10 +200,10 @@ class Network {
 			if (connections.length === 0) break;
 
 			let gater = gaters[i];
-			let connIndex = Math.floor(Math.random() * connections.length);
+			let connIdx = Math.floor(Math.random() * connections.length);
 
-			this.gate(gater, connections[connIndex]);
-			connections.splice(connIndex, 1);
+			this.gate(gater, connections[connIdx]);
+			connections.splice(connIdx, 1);
 		}
 
 		/* Remove gated connections gated by this node */
@@ -328,8 +328,8 @@ class Network {
 
 			case mutation.MOD_BIAS: {
 				/* no effect on input nodes, so they are excluded */
-				let index = Math.floor(Math.random() * (this.nodes.length - this.input) + this.input);
-				let node = this.nodes[index];
+				let idx = Math.floor(Math.random() * (this.nodes.length - this.input) + this.input);
+				let node = this.nodes[idx];
 				node.mutate(method);
 				break;
 			}
@@ -403,8 +403,8 @@ class Network {
 				}
 
 				/* Select a random gater node and connection, can't be gated by input */
-				let index = Math.floor(Math.random() * (this.nodes.length - this.input) + this.input);
-				let node = this.nodes[index];
+				let idx = Math.floor(Math.random() * (this.nodes.length - this.input) + this.input);
+				let node = this.nodes[idx];
 				let conn = possible[Math.floor(Math.random() * possible.length)];
 
 				/* Gate the connection with the node */
@@ -750,25 +750,25 @@ class Network {
 				});
 			} else {
 				/* Add a gater 'node' */
-				let index = json.nodes.length;
+				let idx = json.nodes.length;
 				json.nodes.push({
-					id: index,
+					id: idx,
 					activation: connection.gater.activation,
 					name: 'GATE'
 				});
 				json.links.push({
 					source: this.nodes.indexOf(connection.from),
-					target: index,
+					target: idx,
 					weight: (1 / 2) * connection.weight
 				});
 				json.links.push({
-					source: index,
+					source: idx,
 					target: this.nodes.indexOf(connection.to),
 					weight: (1 / 2) * connection.weight
 				});
 				json.links.push({
 					source: this.nodes.indexOf(connection.gater),
-					target: index,
+					target: idx,
 					weight: connection.gater.activation,
 					gate: true
 				});
@@ -1033,10 +1033,10 @@ class Network {
 			activations.push(node.activation);
 			states.push(node.state);
 
-			let functionIndex = present.indexOf(node.squash.name);
+			let functionIdx = present.indexOf(node.squash.name);
 
-			if (functionIndex === -1) {
-				functionIndex = present.length;
+			if (functionIdx === -1) {
+				functionIdx = present.length;
 				present.push(node.squash.name);
 				functions.push(node.squash.toString());
 			}
@@ -1065,7 +1065,7 @@ class Network {
 			}
 
 			let line1 = `S[${i}] = ${incoming.join(' + ')} + ${node.bias};`;
-			let line2 = `A[${i}] = F[${functionIndex}](S[${i}])${!node.mask ? ' * ' + node.mask : ''};`;
+			let line2 = `A[${i}] = F[${functionIdx}](S[${i}])${!node.mask ? ' * ' + node.mask : ''};`;
 			lines.push(line1);
 			lines.push(line2);
 		}
@@ -1186,10 +1186,10 @@ class Network {
 		for (i = 0; i < network2.connections.length; i++) {
 			let conn = network2.connections[i];
 			if (conn.from.type === 'input') {
-				let index = network2.nodes.indexOf(conn.from);
+				let idx = network2.nodes.indexOf(conn.from);
 
 				/* redirect */
-				conn.from = network1.nodes[network1.nodes.length - 1 - index];
+				conn.from = network1.nodes[network1.nodes.length - 1 - idx];
 			}
 		}
 

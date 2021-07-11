@@ -179,15 +179,15 @@ class Group {
 	}
 
 	/* Disconnects all nodes from this group from another given group/node */
-	disconnect(target, twosided) {
-		twosided = twosided || false;
+	disconnect(target, twoSided) {
+		twoSided = twoSided || false;
 
 		/* In the future, disconnect will return a connection so indexOf can be used */
 		let i, j, k;
 		if (target instanceof Group) {
 			for (i = 0; i < this.nodes.length; i++) {
 				for (j = 0; j < target.nodes.length; j++) {
-					this.nodes[i].disconnect(target.nodes[j], twosided);
+					this.nodes[i].disconnect(target.nodes[j], twoSided);
 
 					for (k = this.connections.out.length - 1; k >= 0; k--) {
 						let conn = this.connections.out[k];
@@ -198,7 +198,7 @@ class Group {
 						}
 					}
 
-					if (twosided) {
+					if (twoSided) {
 						for (k = this.connections.in.length - 1; k >= 0; k--) {
 							let conn = this.connections.in[k];
 
@@ -212,7 +212,7 @@ class Group {
 			}
 		} else if (target instanceof Node) {
 			for (i = 0; i < this.nodes.length; i++) {
-				this.nodes[i].disconnect(target, twosided);
+				this.nodes[i].disconnect(target, twoSided);
 
 				for (j = this.connections.out.length - 1; j >= 0; j--) {
 					let conn = this.connections.out[j];
@@ -223,7 +223,7 @@ class Group {
 					}
 				}
 
-				if (twosided) {
+				if (twoSided) {
 					for (j = this.connections.in.length - 1; j >= 0; j--) {
 						let conn = this.connections.in[j];
 
