@@ -156,10 +156,10 @@ class Layer {
 	/* Static method to create a Dense layer */
 	static Dense(size) {
 		/* Create the layer */
-		var layer = new Layer();
+		let layer = new Layer();
 
 		/* Init required nodes (in activation order) */
-		var block = new Group(size);
+		let block = new Group(size);
 
 		layer.nodes.push(block);
 		layer.output = block;

@@ -239,7 +239,7 @@ class Group {
 
 	/* Clear the context of this group */
 	clear() {
-		for (var i = 0; i < this.nodes.length; i++) {
+		for (let i = 0; i < this.nodes.length; i++) {
 			this.nodes[i].clear();
 		}
 	}

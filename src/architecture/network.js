@@ -229,24 +229,24 @@ class Network {
 		switch (method) {
 			case mutation.ADD_NODE: {
 				/* Look for an existing connection and place a node in between */
-				var connection = this.connections[Math.floor(Math.random() * this.connections.length)];
-				var gater = connection.gater;
+				let connection = this.connections[Math.floor(Math.random() * this.connections.length)];
+				let gater = connection.gater;
 				this.disconnect(connection.from, connection.to);
 
 				/* Insert the new node right before the old connection.to */
-				var toIdx = this.nodes.indexOf(connection.to);
-				var node = new Node('hidden');
+				let toIdx = this.nodes.indexOf(connection.to);
+				let node = new Node('hidden');
 
 				/* Random squash function */
 				node.mutate(mutation.MOD_ACTIVATION);
 
 				/* Place it in this.nodes */
-				var minBound = Math.min(toIdx, this.nodes.length - this.output);
+				let minBound = Math.min(toIdx, this.nodes.length - this.output);
 				this.nodes.splice(minBound, 0, node);
 
 				/* Now create two new connections */
-				var newConn1 = this.connect(connection.from, node)[0];
-				var newConn2 = this.connect(node, connection.to)[0];
+				let newConn1 = this.connect(connection.from, node)[0];
+				let newConn2 = this.connect(node, connection.to)[0];
 
 				/* Check if the original connection was gated */
 				if (gater != null) {
@@ -263,7 +263,7 @@ class Network {
 				}
 
 				/* Select a node which isn't an input or output node */
-				var idx = Math.floor(
+				let idx = Math.floor(
 					Math.random() * (this.nodes.length - this.output - this.input) + this.input
 				);
 				this.remove(this.nodes[idx]);
@@ -272,11 +272,11 @@ class Network {
 
 			case mutation.ADD_CONN: {
 				/* Create an array of all uncreated (feedforward) connections */
-				var available = [];
+				const available = [];
 				for (i = 0; i < this.nodes.length - this.output; i++) {
-					var node1 = this.nodes[i];
+					let node1 = this.nodes[i];
 					for (j = Math.max(i + 1, this.input); j < this.nodes.length; j++) {
-						var node2 = this.nodes[j];
+						let node2 = this.nodes[j];
 						if (!node1.isProjectingTo(node2)) available.push([node1, node2]);
 					}
 				}
@@ -286,17 +286,17 @@ class Network {
 					break;
 				}
 
-				var pair = available[Math.floor(Math.random() * available.length)];
+				let pair = available[Math.floor(Math.random() * available.length)];
 				this.connect(pair[0], pair[1]);
 				break;
 			}
 
 			case mutation.SUB_CONN: {
 				/* List of possible connections that can be removed */
-				var possible = [];
+				const possible = [];
 
 				for (i = 0; i < this.connections.length; i++) {
-					var conn = this.connections[i];
+					let conn = this.connections[i];
 					// Check if it is not disabling a node
 					if (
 						conn.from.connections.out.length > 1 &&
@@ -312,15 +312,15 @@ class Network {
 					break;
 				}
 
-				var randomConn = possible[Math.floor(Math.random() * possible.length)];
+				let randomConn = possible[Math.floor(Math.random() * possible.length)];
 				this.disconnect(randomConn.from, randomConn.to);
 				break;
 			}
 
 			case mutation.MOD_WEIGHT: {
-				var allconnections = this.connections.concat(this.selfconns);
+				let allconnections = this.connections.concat(this.selfconns);
 
-				connection = allconnections[Math.floor(Math.random() * allconnections.length)];
+				let connection = allconnections[Math.floor(Math.random() * allconnections.length)];
 				let modification = Math.random() * (method.max - method.min) + method.min;
 				connection.weight += modification;
 				break;
@@ -527,16 +527,16 @@ class Network {
 		}
 
 		/* Read the options */
-		var targetError = options.error || 0.05;
-		var cost = options.cost || methods.cost.MSE;
-		var baseRate = options.rate || 0.3;
-		var dropout = options.dropout || 0;
-		var momentum = options.momentum || 0;
+		let targetError = options.error || 0.05;
+		let cost = options.cost || methods.cost.MSE;
+		let baseRate = options.rate || 0.3;
+		let dropout = options.dropout || 0;
+		let momentum = options.momentum || 0;
 		/* online learning */
-		var batchSize = options.batchSize || 1;
-		var ratePolicy = options.ratePolicy || methods.rate.FIXED();
+		let batchSize = options.batchSize || 1;
+		let ratePolicy = options.ratePolicy || methods.rate.FIXED();
 
-		var start = Date.now();
+		let start = Date.now();
 
 		if (batchSize > set.length) {
 			throw new Error('Batch size must be smaller or equal to dataset length!');
@@ -552,19 +552,21 @@ class Network {
 
 		/* Save to network */
 		this.dropout = dropout;
+		let trainSet;
+		let testSet;
 
 		if (options.crossValidate) {
 			let numTrain = Math.ceil((1 - options.crossValidate.testSize) * set.length);
-			var trainSet = set.slice(0, numTrain);
-			var testSet = set.slice(numTrain);
+			trainSet = set.slice(0, numTrain);
+			testSet = set.slice(numTrain);
 		}
 
 		/* Loop the training process */
-		var currentRate = baseRate;
-		var iteration = 0;
-		var error = 1;
+		let currentRate = baseRate;
+		let iteration = 0;
+		let error = 1;
 
-		var i, j, x;
+		let i, j, x;
 		while (error > targetError && (options.iterations === 0 || iteration < options.iterations)) {
 			if (options.crossValidate && error <= options.crossValidate.testError) break;
 
@@ -911,17 +913,17 @@ class Network {
 				return new Promise((resolve, reject) => {
 					/* eslint-enable no-unused-vars */
 					/* Create a queue */
-					var queue = population.slice();
-					var done = 0;
+					let queue = population.slice();
+					let done = 0;
 
 					/* Start worker function */
-					var startWorker = function (worker) {
+					let startWorker = function (worker) {
 						if (!queue.length) {
 							if (++done === threads) resolve();
 							return;
 						}
 
-						var genome = queue.shift();
+						let genome = queue.shift();
 
 						worker.evaluate(genome).then(function (result) {
 							genome.score = -result;
@@ -937,7 +939,7 @@ class Network {
 						});
 					};
 
-					for (var i = 0; i < workers.length; i++) {
+					for (let i = 0; i < workers.length; i++) {
 						startWorker(workers[i]);
 					}
 				});
@@ -948,11 +950,11 @@ class Network {
 
 		/* Intialise the NEAT instance */
 		options.network = this;
-		var neat = new Neat(this.input, this.output, fitnessFunction, options);
+		let neat = new Neat(this.input, this.output, fitnessFunction, options);
 
-		var error = -Infinity;
-		var bestFitness = -Infinity;
-		var bestGenome;
+		let error = -Infinity;
+		let bestFitness = -Infinity;
+		let bestGenome;
 
 		while (
 			error < -targetError &&
@@ -984,7 +986,7 @@ class Network {
 		}
 
 		if (threads > 1) {
-			for (var i = 0; i < workers.length; i++) workers[i].terminate();
+			for (let i = 0; i < workers.length; i++) workers[i].terminate();
 		}
 
 		if (typeof bestGenome !== 'undefined') {
@@ -1021,7 +1023,7 @@ class Network {
 			states.push(node.state);
 		}
 
-		lines.push('for(var i = 0; i < input.length; i++) A[i] = input[i];');
+		lines.push('for(let i = 0; i < input.length; i++) A[i] = input[i];');
 
 		/* So we don't have to use expensive .indexOf() */
 		for (i = 0; i < this.nodes.length; i++) {
@@ -1070,7 +1072,7 @@ class Network {
 			lines.push(line2);
 		}
 
-		var output = [];
+		let output = [];
 		for (i = this.nodes.length - this.output; i < this.nodes.length; i++) {
 			output.push(`A[${i}]`);
 		}
@@ -1079,9 +1081,9 @@ class Network {
 		lines.push(output);
 
 		let total = '';
-		total += `var F = [${functions.toString()}];\r\n`;
-		total += `var A = [${activations.toString()}];\r\n`;
-		total += `var S = [${states.toString()}];\r\n`;
+		total += `let F = [${functions.toString()}];\r\n`;
+		total += `let A = [${activations.toString()}];\r\n`;
+		total += `let S = [${states.toString()}];\r\n`;
 		total += `function activate(input){\r\n${lines.join('\r\n')}\r\n}`;
 
 		return total;
@@ -1130,7 +1132,7 @@ class Network {
 			conns.push(node.connections.self.weight);
 			conns.push(node.connections.self.gater == null ? -1 : node.connections.self.gater.index);
 
-			for (var j = 0; j < node.connections.in.length; j++) {
+			for (let j = 0; j < node.connections.in.length; j++) {
 				let conn = node.connections.in[j];
 
 				conns.push(conn.from.index);
@@ -1157,9 +1159,9 @@ class Network {
 		}
 
 		for (i = 0; i < json.connections.length; i++) {
-			var conn = json.connections[i];
+			let conn = json.connections[i];
 
-			var connection = network.connect(network.nodes[conn.from], network.nodes[conn.to])[0];
+			let connection = network.connect(network.nodes[conn.from], network.nodes[conn.to])[0];
 			connection.weight = conn.weight;
 
 			if (conn.gater != null) {
@@ -1270,7 +1272,7 @@ class Network {
 				}
 			}
 
-			var newNode = new Node();
+			let newNode = new Node();
 			newNode.bias = node.bias;
 			newNode.squash = node.squash;
 			newNode.type = node.type;
@@ -1278,8 +1280,8 @@ class Network {
 			offspring.nodes.push(newNode);
 		}
 		/* Create arrays of connection genes */
-		var n1conns = {};
-		var n2conns = {};
+		let n1conns = {};
+		let n2conns = {};
 
 		/* Normal connections */
 		for (i = 0; i < network1.connections.length; i++) {

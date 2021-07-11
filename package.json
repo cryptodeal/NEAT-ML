@@ -2,7 +2,7 @@
   "name": "neat-ml",
   "version": "0.0.1",
   "description": "Neuroevolution of Augmenting Topologies implemented in javascript. Inspired by Neataptic and other unmaintained implementations of NEAT, but intended to leverage existing ML libraries like tensorflow.js, brain.js, or ML5.js in order to leverage their performance advantage.",
-  "main": "index.js",
+  "main": "src/neat-ml.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --ignore-path .gitignore --fix"

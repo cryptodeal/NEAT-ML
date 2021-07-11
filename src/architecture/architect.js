@@ -8,7 +8,7 @@ const Group = require('./group');
 const Layer = require('./layer');
 const Node = require('./node');
 
-const architect = () => ({
+const architect = {
 	Construct: (list) => {
 		/* Create a network */
 		let network = new Network(0, 0);
@@ -25,7 +25,7 @@ const architect = () => ({
 				}
 			} else if (list[i] instanceof Layer) {
 				for (j = 0; j < list[i].nodes.length; j++) {
-					for (var k = 0; k < list[i].nodes[j].nodes.length; k++) {
+					for (let k = 0; k < list[i].nodes[j].nodes.length; k++) {
 						nodes.push(list[i].nodes[j].nodes[k]);
 					}
 				}
@@ -352,4 +352,4 @@ const architect = () => ({
 
 		return architect.Construct(nodes);
 	}
-});
+};
