@@ -1,6 +1,3 @@
-/* Export */
-module.exports = Network;
-
 /* Imports */
 const config = require('../config');
 const methods = require('../methods/methods');
@@ -1376,3 +1373,6 @@ class Network {
 		return offspring;
 	}
 }
+
+/* Export */
+module.exports = Network;

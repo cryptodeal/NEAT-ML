@@ -1,6 +1,3 @@
-/* Export */
-module.exports = rate;
-
 /**
  * RATE
  * See: https://stackoverflow.com/questions/30033096/what-is-lr-policy-in-caffe/30045244
@@ -48,3 +45,6 @@ const rate = {
 		return func;
 	}
 };
+
+/* Export */
+module.exports = rate;

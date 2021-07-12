@@ -1,6 +1,3 @@
-/* Export */
-module.exports = selection;
-
 /**
  * SELECTION
  * See: https://en.wikipedia.org/wiki/Selection_(genetic_algorithm)
@@ -20,3 +17,6 @@ const selection = {
 		probability: 0.5
 	}
 };
+
+/* Export */
+module.exports = selection;

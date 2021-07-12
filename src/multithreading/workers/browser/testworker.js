@@ -1,6 +1,3 @@
-/* Export */
-module.exports = TestWorker;
-
 /* Import */
 const multi = require('../../multi');
 
@@ -66,3 +63,6 @@ class TestWorker {
 		return source;
 	}
 }
+
+/* Export */
+module.exports = TestWorker;

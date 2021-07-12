@@ -1,6 +1,3 @@
-/* Export */
-module.exports = cost;
-
 /**
  * Define Cost (Loss) Functions
  * See: https://en.wikipedia.org/wiki/Loss_function
@@ -78,3 +75,6 @@ const cost = {
 		return error;
 	}
 };
+
+/* Export */
+module.exports = cost;

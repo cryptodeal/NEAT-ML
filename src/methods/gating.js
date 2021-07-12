@@ -1,6 +1,3 @@
-/* Export */
-module.exports = gating;
-
 /**
  * GATING
  * Specifies how to gate a connection between two groups of multiple neurons
@@ -16,3 +13,6 @@ const gating = {
 		name: 'SELF'
 	}
 };
+
+/* Export */
+module.exports = gating;

@@ -1,5 +1,5 @@
 /* Imports */
-const { multi, methods } = require('../../../neataptic');
+const { multi, methods } = require('../../../neatml');
 
 let set = [];
 let cost;

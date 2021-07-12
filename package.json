@@ -4,10 +4,12 @@
   "description": "Neuroevolution of Augmenting Topologies implemented in javascript. Inspired by Neataptic and other unmaintained implementations of NEAT, but intended to leverage existing ML libraries like tensorflow.js, brain.js, or ML5.js in order to leverage their performance advantage.",
   "main": "./src/neatml.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:src": "mocha test/src.js test",
+    "test:dist": "mocha test/dist.js test",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --ignore-path .eslintignore --fix",
     "build:dist": "webpack",
-    "build": "npm run build:dist"
+    "build": "npm run build:dist",
+    "test": "npm run build:dist && npm run test:dist"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [

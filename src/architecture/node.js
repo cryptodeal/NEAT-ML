@@ -1,6 +1,3 @@
-/* Export */
-module.exports = Node;
-
 /* Import */
 const methods = require('../methods/methods');
 const Connection = require('./connection');
@@ -415,3 +412,6 @@ class Node {
 		return node;
 	}
 }
+
+/* Export */
+module.exports = Node;

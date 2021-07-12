@@ -1,6 +1,3 @@
-/* Export */
-module.exports = crossover;
-
 /**
  * CROSSOVER
  * See: https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)
@@ -22,3 +19,6 @@ const crossover = {
 		name: 'AVERAGE'
 	}
 };
+
+/* Export */
+module.exports = crossover;

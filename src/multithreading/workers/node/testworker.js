@@ -1,6 +1,3 @@
-/* Export */
-module.exports = TestWorker;
-
 /* Import */
 const cp = require('child_process');
 const path = require('path');
@@ -39,3 +36,6 @@ class TestWorker {
 		this.worker.kill();
 	}
 }
+
+/* Export */
+module.exports = TestWorker;

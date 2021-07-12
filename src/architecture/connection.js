@@ -1,6 +1,3 @@
-/* Export */
-module.exports = Connection;
-
 class Connection {
 	constructor(from, to, weight) {
 		this.from = from;
@@ -39,3 +36,6 @@ class Connection {
 		return (1 / 2) * (a + b) * (a + b + 1) + b;
 	}
 }
+
+/* Export */
+module.exports = Connection;

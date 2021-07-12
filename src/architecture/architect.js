@@ -1,6 +1,3 @@
-/* Export */
-module.exports = architect;
-
 /* Import */
 const methods = require('../methods/methods');
 const Network = require('./network');
@@ -353,3 +350,6 @@ const architect = {
 		return architect.Construct(nodes);
 	}
 };
+
+/* Export */
+module.exports = architect;

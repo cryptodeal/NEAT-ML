@@ -1,6 +1,3 @@
-/* Export */
-module.exports = connection;
-
 /* Specifies in what manner two groups are connected */
 const connection = {
 	ALL_TO_ALL: {
@@ -13,3 +10,6 @@ const connection = {
 		name: 'SELF'
 	}
 };
+
+/* Export */
+module.exports = connection;

@@ -1,6 +1,3 @@
-/* Export */
-module.exports = activation;
-
 /**
  * Define Activation Functions
  * See: https://en.wikipedia.org/wiki/Activation_function
@@ -107,3 +104,6 @@ const activation = {
 		return fx * scale;
 	}
 };
+
+/* Export */
+module.exports = activation;

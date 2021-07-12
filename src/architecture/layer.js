@@ -1,6 +1,3 @@
-/* Export */
-module.exports = Layer;
-
 /* Import */
 const methods = require('../methods/methods');
 const Group = require('./group');
@@ -361,3 +358,6 @@ class Layer {
 		return layer;
 	}
 }
+
+/* Export */
+module.exports = Layer;

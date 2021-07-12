@@ -1,6 +1,3 @@
-/* Export */
-module.exports = methods;
-
 const methods = {
 	activation: require('./activation'),
 	mutation: require('./mutation'),
@@ -11,3 +8,6 @@ const methods = {
 	connection: require('./connection'),
 	rate: require('./rate')
 };
+
+/* Export */
+module.exports = methods;

@@ -1,6 +1,3 @@
-/* Export */
-module.exports = Neat;
-
 /* Import */
 const Network = require('./architecture/network');
 const methods = require('./methods/methods');
@@ -314,3 +311,5 @@ class Neat {
 		this.popsize = population.length;
 	}
 }
+/* Export */
+module.exports = Neat;

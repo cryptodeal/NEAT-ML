@@ -1,6 +1,3 @@
-/* Export */
-module.exports = Group;
-
 /* Import */
 const methods = require('../methods/methods');
 const config = require('../config');
@@ -244,3 +241,6 @@ class Group {
 		}
 	}
 }
+
+/* Export */
+module.exports = Group;

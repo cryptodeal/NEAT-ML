@@ -1,6 +1,3 @@
-/* Export */
-module.exports = workers;
-
 /* WORKERS */
 const workers = {
 	node: {
@@ -10,3 +7,6 @@ const workers = {
 		TestWorker: require('./browser/testworker')
 	}
 };
+
+/* Export */
+module.exports = workers;

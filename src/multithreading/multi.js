@@ -1,9 +1,4 @@
-/* Export */
-for (const i in multi) {
-	module.exports[i] = multi[i];
-}
 /* MULTITHREADING */
-
 const multi = {
 	/* Workers */
 	workers: require('./workers/workers'),
@@ -131,3 +126,8 @@ multi.testSerializedSet = function (set, cost, A, S, data, F) {
 
 	return error / (set.length / 2);
 };
+
+/* Export */
+for (const i in multi) {
+	module.exports[i] = multi[i];
+}

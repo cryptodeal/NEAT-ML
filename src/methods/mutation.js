@@ -1,6 +1,3 @@
-/* Export */
-module.exports = mutation;
-
 /* Imports */
 const activation = require('./activation');
 
@@ -104,3 +101,6 @@ mutation.FFW = [
 	mutation.MOD_ACTIVATION,
 	mutation.SWAP_NODES
 ];
+
+/* Export */
+module.exports = mutation;
