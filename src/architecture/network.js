@@ -3,6 +3,7 @@ const config = require('../config');
 const methods = require('../methods/methods');
 const multi = require('../multithreading/multi');
 const Neat = require('../neat');
+const Node = require('./node');
 const Connection = require('./connection');
 
 /* Easier letiable naming */
@@ -101,6 +102,22 @@ class Network {
 		for (let i = 0; i < this.nodes.length; i++) {
 			this.nodes[i].clear();
 		}
+	}
+
+	/* Connects the from node to the to node */
+	connect(from, to, weight) {
+		const connections = from.connect(to, weight);
+
+		for (let i = 0; i < connections.length; i++) {
+			let connection = connections[i];
+			if (from !== to) {
+				this.connections.push(connection);
+			} else {
+				this.selfConns.push(connection);
+			}
+		}
+
+		return connections;
 	}
 
 	/* Disconnects the from node from the to node */
@@ -315,7 +332,7 @@ class Network {
 			}
 
 			case mutation.MOD_WEIGHT: {
-				let allconnections = this.connections.concat(this.selfconns);
+				let allconnections = this.connections.concat(this.selfConns);
 
 				let connection = allconnections[Math.floor(Math.random() * allconnections.length)];
 				let modification = Math.random() * (method.max - method.min) + method.min;
@@ -373,17 +390,17 @@ class Network {
 			}
 
 			case mutation.SUB_SELF_CONN: {
-				if (this.selfconns.length === 0) {
+				if (this.selfConns.length === 0) {
 					if (config.warnings) console.warn('No more self-connections to remove!');
 					break;
 				}
-				let conn = this.selfconns[Math.floor(Math.random() * this.selfconns.length)];
+				let conn = this.selfConns[Math.floor(Math.random() * this.selfConns.length)];
 				this.disconnect(conn.from, conn.to);
 				break;
 			}
 
 			case mutation.ADD_GATE: {
-				let allconnections = this.connections.concat(this.selfconns);
+				let allconnections = this.connections.concat(this.selfConns);
 
 				/* Create a list of all non-gated connections */
 				let possible = [];
@@ -738,7 +755,7 @@ class Network {
 			});
 		}
 
-		let connections = this.connections.concat(this.selfconns);
+		let connections = this.connections.concat(this.selfConns);
 		for (i = 0; i < connections.length; i++) {
 			let connection = connections[i];
 			if (connection.gater == null) {
@@ -989,7 +1006,7 @@ class Network {
 		if (typeof bestGenome !== 'undefined') {
 			this.nodes = bestGenome.nodes;
 			this.connections = bestGenome.connections;
-			this.selfconns = bestGenome.selfconns;
+			this.selfConns = bestGenome.selfConns;
 			this.gates = bestGenome.gates;
 
 			if (options.clear) this.clear();
@@ -1293,8 +1310,8 @@ class Network {
 		}
 
 		/* Selfconnections */
-		for (i = 0; i < network1.selfconns.length; i++) {
-			let conn = network1.selfconns[i];
+		for (i = 0; i < network1.selfConns.length; i++) {
+			let conn = network1.selfConns[i];
 			let data = {
 				weight: conn.weight,
 				from: conn.from.index,
@@ -1317,8 +1334,8 @@ class Network {
 		}
 
 		/* Selfconnections */
-		for (i = 0; i < network2.selfconns.length; i++) {
-			let conn = network2.selfconns[i];
+		for (i = 0; i < network2.selfConns.length; i++) {
+			let conn = network2.selfConns[i];
 			let data = {
 				weight: conn.weight,
 				from: conn.from.index,
