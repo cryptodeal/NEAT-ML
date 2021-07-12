@@ -403,7 +403,7 @@ class Node {
 
 	/* Convert a json object to a node */
 	static fromJSON(json) {
-		let node = new this();
+		let node = new Node();
 		node.bias = json.bias;
 		node.type = json.type;
 		node.mask = json.mask;

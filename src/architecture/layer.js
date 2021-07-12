@@ -232,7 +232,7 @@ class Layer {
 	/* Static method to create a GRU layer */
 	static GRU(size) {
 		/* Create the layer */
-		let layer = new this();
+		let layer = new Layer();
 
 		let updateGate = new Group(size);
 		let inverseUpdateGate = new Group(size);

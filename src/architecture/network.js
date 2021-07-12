@@ -1161,8 +1161,8 @@ class Network {
 	}
 
 	/* Convert a json object to a network */
-	static fromJson = (json) => {
-		let network = new this(json.input, json.output);
+	static fromJSON(json) {
+		let network = new Network(json.input, json.output);
 		network.dropout = json.dropout;
 		network.nodes = [];
 		network.connections = [];
@@ -1184,7 +1184,7 @@ class Network {
 		}
 
 		return network;
-	};
+	}
 
 	/* Merge two networks into one */
 	static merge(network1, network2) {
