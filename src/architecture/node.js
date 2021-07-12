@@ -144,7 +144,7 @@ class Node {
 	}
 
 	/* Back-propagate the error, aka learn */
-	propogate(rate, momentum, update, target) {
+	propagate(rate, momentum, update, target) {
 		momentum = momentum || 0;
 		rate = rate || 0.3;
 
@@ -403,7 +403,7 @@ class Node {
 
 	/* Convert a json object to a node */
 	static fromJSON(json) {
-		let node = new Node();
+		let node = new this();
 		node.bias = json.bias;
 		node.type = json.type;
 		node.mask = json.mask;

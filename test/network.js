@@ -10,7 +10,7 @@ config.warnings = false;
 
 /* Functions used in the testing process */
 function checkMutation(method) {
-	var network = new architect.Perceptron(2, 4, 4, 4, 2);
+	var network = architect.Perceptron(2, 4, 4, 4, 2);
 	network.mutate(methods.mutation.ADD_GATE);
 	network.mutate(methods.mutation.ADD_BACK_CONN);
 	network.mutate(methods.mutation.ADD_SELF_CONN);
@@ -41,7 +41,7 @@ function checkMutation(method) {
 }
 
 function learnSet(set, iterations, error) {
-	var network = new architect.Perceptron(set[0].input.length, 5, set[0].output.length);
+	var network = architect.Perceptron(set[0].input.length, 5, set[0].output.length);
 
 	var options = {
 		iterations: iterations,
@@ -162,7 +162,7 @@ describe('Networks', function () {
 		it('from/toJSON equivalency', function () {
 			this.timeout(10000);
 			var original, copy;
-			original = new architect.Perceptron(
+			original = architect.Perceptron(
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1)
@@ -174,7 +174,7 @@ describe('Networks', function () {
 			copy = Network.fromJSON(original.toJSON());
 			testEquality(original, copy);
 
-			original = new architect.LSTM(
+			original = architect.LSTM(
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1)
@@ -182,7 +182,7 @@ describe('Networks', function () {
 			copy = Network.fromJSON(original.toJSON());
 			testEquality(original, copy);
 
-			original = new architect.GRU(
+			original = architect.GRU(
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1),
@@ -191,7 +191,7 @@ describe('Networks', function () {
 			copy = Network.fromJSON(original.toJSON());
 			testEquality(original, copy);
 
-			original = new architect.Random(
+			original = architect.Random(
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 10 + 1),
 				Math.floor(Math.random() * 5 + 1)
@@ -199,7 +199,7 @@ describe('Networks', function () {
 			copy = Network.fromJSON(original.toJSON());
 			testEquality(original, copy);
 
-			original = new architect.NARX(
+			original = architect.NARX(
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 10 + 1),
 				Math.floor(Math.random() * 5 + 1),
@@ -209,14 +209,14 @@ describe('Networks', function () {
 			copy = Network.fromJSON(original.toJSON());
 			testEquality(original, copy);
 
-			original = new architect.Hopfield(Math.floor(Math.random() * 5 + 1));
+			original = architect.Hopfield(Math.floor(Math.random() * 5 + 1));
 			copy = Network.fromJSON(original.toJSON());
 			testEquality(original, copy);
 		});
 		it('standalone equivalency', function () {
 			this.timeout(10000);
 			var original;
-			original = new architect.Perceptron(
+			original = architect.Perceptron(
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1)
@@ -228,7 +228,7 @@ describe('Networks', function () {
 			eval(original.standalone());
 			testEquality(original, activate);
 
-			original = new architect.LSTM(
+			original = architect.LSTM(
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1)
@@ -236,7 +236,7 @@ describe('Networks', function () {
 			eval(original.standalone());
 			testEquality(original, activate);
 
-			original = new architect.GRU(
+			original = architect.GRU(
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1),
@@ -245,7 +245,7 @@ describe('Networks', function () {
 			eval(original.standalone());
 			testEquality(original, activate);
 
-			original = new architect.Random(
+			original = architect.Random(
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 10 + 1),
 				Math.floor(Math.random() * 5 + 1)
@@ -253,7 +253,7 @@ describe('Networks', function () {
 			eval(original.standalone());
 			testEquality(original, activate);
 
-			original = new architect.NARX(
+			original = architect.NARX(
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1),
 				Math.floor(Math.random() * 5 + 1),
@@ -263,7 +263,7 @@ describe('Networks', function () {
 			eval(original.standalone());
 			testEquality(original, activate);
 
-			original = new architect.Hopfield(Math.floor(Math.random() * 5 + 1));
+			original = architect.Hopfield(Math.floor(Math.random() * 5 + 1));
 			eval(original.standalone());
 			testEquality(original, activate);
 		});
@@ -357,7 +357,7 @@ describe('Networks', function () {
 		});
 		it('LSTM XOR', function () {
 			this.timeout(30000);
-			var lstm = new architect.LSTM(1, 1, 1);
+			var lstm = architect.LSTM(1, 1, 1);
 
 			lstm.train(
 				[
@@ -387,7 +387,7 @@ describe('Networks', function () {
 		});
 		it('GRU XOR', function () {
 			this.timeout(30000);
-			var gru = new architect.GRU(1, 2, 1);
+			var gru = architect.GRU(1, 2, 1);
 
 			gru.train(
 				[
@@ -417,7 +417,7 @@ describe('Networks', function () {
 			assert.isBelow(getActivation([0]), 0.1, 'GRU error');
 		});
 		it('NARX Sequence', function () {
-			var narx = new architect.NARX(1, 5, 1, 3, 3);
+			var narx = architect.NARX(1, 5, 1, 3, 3);
 
 			// Train the XOR gate (in sequence!)
 			var trainingData = [

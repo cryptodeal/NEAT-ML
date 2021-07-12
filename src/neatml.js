@@ -1,8 +1,8 @@
 const NeatML = {
+	Network: require('./architecture/network'),
 	methods: require('./methods/methods'),
 	Connection: require('./architecture/connection'),
 	architect: require('./architecture/architect'),
-	Network: require('./architecture/network'),
 	config: require('./config'),
 	Group: require('./architecture/group'),
 	Layer: require('./architecture/layer'),

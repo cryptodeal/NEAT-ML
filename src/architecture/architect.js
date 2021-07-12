@@ -67,7 +67,7 @@ const architect = {
 				network.gates.push(nodes[i].connections.gated[j]);
 			}
 			if (nodes[i].connections.self.weight !== 0) {
-				network.selfconns.push(nodes[i].connections.self);
+				network.selfConns.push(nodes[i].connections.self);
 			}
 		}
 
@@ -274,7 +274,7 @@ const architect = {
 
 		let previous = inputLayer;
 		for (let i = 0; i < blocks.length; i++) {
-			let layer = new Layer.GRU(blocks[i]);
+			let layer = Layer.GRU(blocks[i]);
 			previous.connect(layer);
 			previous = layer;
 
@@ -312,17 +312,17 @@ const architect = {
 
 		const nodes = [];
 
-		let input = new Layer.Dense(inputSize);
-		let inputMemory = new Layer.Memory(inputSize, previousInput);
+		let input = Layer.Dense(inputSize);
+		let inputMemory = Layer.Memory(inputSize, previousInput);
 		const hidden = [];
-		let output = new Layer.Dense(outputSize);
-		let outputMemory = new Layer.Memory(outputSize, previousOutput);
+		let output = Layer.Dense(outputSize);
+		let outputMemory = Layer.Memory(outputSize, previousOutput);
 
 		nodes.push(input);
 		nodes.push(outputMemory);
 
 		for (let i = 0; i < hiddenLayers.length; i++) {
-			let hiddenLayer = new Layer.Dense(hiddenLayers[i]);
+			let hiddenLayer = Layer.Dense(hiddenLayers[i]);
 			hidden.push(hiddenLayer);
 			nodes.push(hiddenLayer);
 			if (typeof hidden[i - 1] !== 'undefined') {

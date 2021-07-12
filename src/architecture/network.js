@@ -78,7 +78,7 @@ class Network {
 		return output;
 	}
 
-	/* Backpropogate the Network */
+	/* Backpropagate the Network */
 	propagate(rate, momentum, update, target) {
 		if (typeof target === 'undefined' || target.length !== this.output) {
 			throw new Error('Output target length should match network output length');
@@ -1161,8 +1161,8 @@ class Network {
 	}
 
 	/* Convert a json object to a network */
-	static fromJson(json) {
-		let network = new Network(json.input, json.output);
+	static fromJson = (json) => {
+		let network = new this(json.input, json.output);
 		network.dropout = json.dropout;
 		network.nodes = [];
 		network.connections = [];
@@ -1184,13 +1184,13 @@ class Network {
 		}
 
 		return network;
-	}
+	};
 
 	/* Merge two networks into one */
 	static merge(network1, network2) {
 		/* Create a copy of the networks */
-		network1 = Network.fromJSON(network1.toJSON());
-		network2 = Network.fromJSON(network2.toJSON());
+		network1 = this.fromJSON(network1.toJSON());
+		network2 = this.fromJSON(network2.toJSON());
 
 		/* Check if output and input size are the same */
 		if (network1.output !== network2.input) {
@@ -1227,7 +1227,7 @@ class Network {
 	}
 
 	/* Create an offspring from two parent networks */
-	static crossover(network1, network2, equal) {
+	static crossOver(network1, network2, equal) {
 		if (network1.input !== network2.input || network1.output !== network2.output) {
 			throw new Error("Networks don't have the same input/output size!");
 		}

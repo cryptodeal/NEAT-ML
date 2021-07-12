@@ -41,7 +41,7 @@ class Group {
 	}
 
 	/* Propagates all the node in the group */
-	propogate(rate, momentum, target) {
+	propagate(rate, momentum, target) {
 		if (typeof target !== 'undefined' && target.length !== this.nodes.length) {
 			throw new Error('Array with values should be same as the amount of nodes!');
 		}
