@@ -34,7 +34,8 @@ module.exports = {
 		path: __dirname,
 		filename: '[name].js',
 		library: 'NEAT-ML',
-		libraryTarget: 'umd'
+		libraryTarget: 'umd',
+		globalObject: 'this'
 	},
 	plugins: [
 		new webpack.BannerPlugin(license),
