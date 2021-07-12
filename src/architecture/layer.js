@@ -3,7 +3,7 @@ const methods = require('../methods/methods');
 const Group = require('./group');
 const Node = require('./node');
 
-/* Layer Class Delcaration */
+/* Layer Class Declaration */
 class Layer {
 	constructor() {
 		this.output = null;

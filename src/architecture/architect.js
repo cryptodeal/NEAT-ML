@@ -1,8 +1,8 @@
 /* Import */
 const methods = require('../methods/methods');
 const Network = require('./network');
-const Group = require('./group');
 const Layer = require('./layer');
+const Group = require('./group');
 const Node = require('./node');
 
 const architect = {
