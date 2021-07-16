@@ -59,7 +59,7 @@ class Group {
 	connect(target, method, weight) {
 		let connections = [];
 		let i, j;
-		if (target instanceof Group) {
+		if (target.isType === 'Group') {
 			if (typeof method === 'undefined') {
 				if (this !== target) {
 					if (config.warnings) console.warn('No group connection specified, using ALL_TO_ALL');
@@ -93,7 +93,7 @@ class Group {
 			}
 		} else if (target.isType === 'Layer') {
 			connections = target.input(this, method, weight);
-		} else if (target instanceof Node) {
+		} else if (target.isType === 'Node') {
 			for (i = 0; i < this.nodes.length; i++) {
 				let connection = this.nodes[i].connect(target, weight);
 				this.connections.out.push(connection[0]);
@@ -181,7 +181,7 @@ class Group {
 
 		/* In the future, disconnect will return a connection so indexOf can be used */
 		let i, j, k;
-		if (target instanceof Group) {
+		if (target.isType === 'Group') {
 			for (i = 0; i < this.nodes.length; i++) {
 				for (j = 0; j < target.nodes.length; j++) {
 					this.nodes[i].disconnect(target.nodes[j], twoSided);
@@ -207,7 +207,7 @@ class Group {
 					}
 				}
 			}
-		} else if (target instanceof Node) {
+		} else if (target.isType === 'Node') {
 			for (i = 0; i < this.nodes.length; i++) {
 				this.nodes[i].disconnect(target, twoSided);
 

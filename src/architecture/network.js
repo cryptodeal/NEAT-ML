@@ -1158,7 +1158,8 @@ module.exports = class Network {
 				conns.push(conn.gater == null ? -1 : conn.gater.index);
 			}
 
-			conns.push(-2); // stop token -> next node
+			/* stop token -> next node */
+			conns.push(-2);
 		}
 
 		return [activations, states, conns];

@@ -1,7 +1,6 @@
 /* Import */
 const methods = require('../methods/methods');
 const Group = require('./group');
-const Node = require('./node');
 
 /* Layer Class Declaration */
 class Layer {
@@ -72,7 +71,7 @@ class Layer {
 		for (let i = 0; i < this.nodes.length; i++) {
 			let node = this.nodes[i];
 
-			if (node instanceof Node) {
+			if (node.isType === 'Node') {
 				if (typeof values.bias !== 'undefined') {
 					node.bias = values.bias;
 				}
@@ -89,7 +88,7 @@ class Layer {
 	disconnect(target, twoSided) {
 		twoSided = twoSided || false;
 
-		/* In the future, disconnect will return a connection so indexOf can be used */
+		/* TODO: disconnect should return a connection so indexOf can be used */
 		let i, j, k;
 		if (target.isType === 'Group') {
 			for (i = 0; i < this.nodes.length; i++) {
@@ -117,7 +116,7 @@ class Layer {
 					}
 				}
 			}
-		} else if (target instanceof Node) {
+		} else if (target.isType === 'Node') {
 			for (i = 0; i < this.nodes.length; i++) {
 				this.nodes[i].disconnect(target, twoSided);
 
@@ -163,7 +162,7 @@ class Layer {
 		layer.output = block;
 
 		layer.input = function (from, method, weight) {
-			if (from instanceof Layer) from = from.output;
+			if (from.isType === 'Layer') from = from.output;
 			method = method || methods.connection.ALL_TO_ALL;
 			return from.connect(block, method, weight);
 		};
@@ -211,7 +210,7 @@ class Layer {
 		layer.output = outputBlock;
 
 		layer.input = function (from, method, weight) {
-			if (from instanceof Layer) from = from.output;
+			if (from.isType === 'Layer') from = from.output;
 			method = method || methods.connection.ALL_TO_ALL;
 			let connections = [];
 
@@ -293,7 +292,7 @@ class Layer {
 		layer.output = output;
 
 		layer.input = function (from, method, weight) {
-			if (from instanceof Layer) from = from.output;
+			if (from.isType === 'Layer') from = from.output;
 			method = method || methods.connection.ALL_TO_ALL;
 			let connections = [];
 
@@ -346,7 +345,7 @@ class Layer {
 		layer.output = outputGroup;
 		/* eslint-disable no-unused-vars */
 		layer.input = function (from, method, weight) {
-			if (from instanceof Layer) from = from.output;
+			if (from.isType === 'Layer') from = from.output;
 			method = method || methods.connection.ALL_TO_ALL;
 			if (from.nodes.length !== layer.nodes[layer.nodes.length - 1].nodes.length) {
 				throw new Error('Previous layer size must be same as memory size');
