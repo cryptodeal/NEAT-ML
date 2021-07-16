@@ -1,11 +1,11 @@
 /* Import */
 const methods = require('../methods/methods');
 const config = require('../config');
-const Layer = require('./layer');
 const Node = require('./node');
 
 class Group {
 	constructor(size) {
+		this.isType = 'Group';
 		this.nodes = [];
 		this.connections = {
 			in: [],
@@ -91,7 +91,7 @@ class Group {
 					connections.push(connection[0]);
 				}
 			}
-		} else if (target instanceof Layer) {
+		} else if (target.isType === 'Layer') {
 			connections = target.input(this, method, weight);
 		} else if (target instanceof Node) {
 			for (i = 0; i < this.nodes.length; i++) {

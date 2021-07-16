@@ -38,6 +38,7 @@
     "@babel/preset-env": "^7.14.7",
     "assert": "^2.0.0",
     "chai": "^4.3.4",
+    "circular-dependency-plugin": "^5.2.2",
     "console-browserify": "^1.2.0",
     "copy-webpack-plugin": "^9.0.1",
     "eslint": "^7.30.0",

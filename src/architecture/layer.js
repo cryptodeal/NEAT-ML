@@ -6,6 +6,7 @@ const Node = require('./node');
 /* Layer Class Declaration */
 class Layer {
 	constructor() {
+		this.isType = 'Layer';
 		this.output = null;
 
 		this.nodes = [];
@@ -52,7 +53,7 @@ class Layer {
 	/* Connects the nodes in this group to nodes in another group or just a node */
 	connect(target, method, weight) {
 		let connections;
-		if (target instanceof Group || target instanceof Node) {
+		if (target.isType === 'Layer' || target instanceof Node) {
 			connections = this.output.connect(target, method, weight);
 		} else if (target instanceof Layer) {
 			connections = target.input(this, method, weight);
@@ -78,7 +79,7 @@ class Layer {
 
 				node.squash = values.squash || node.squash;
 				node.type = values.type || node.type;
-			} else if (node instanceof Group) {
+			} else if (node.isType === 'Group') {
 				node.set(values);
 			}
 		}
@@ -90,7 +91,7 @@ class Layer {
 
 		/* In the future, disconnect will return a connection so indexOf can be used */
 		let i, j, k;
-		if (target instanceof Group) {
+		if (target.isType === 'Group') {
 			for (i = 0; i < this.nodes.length; i++) {
 				for (j = 0; j < target.nodes.length; j++) {
 					this.nodes[i].disconnect(target.nodes[j], twoSided);

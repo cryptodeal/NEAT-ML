@@ -7,7 +7,7 @@ const config = require('./config');
 const selection = methods.selection;
 
 /* NEAT */
-class Neat {
+module.exports = class Neat {
 	constructor(input, output, fitness, options) {
 		/* The input size of the networks */
 		this.input = input;
@@ -120,8 +120,8 @@ class Neat {
 
 	/* Breeds two parents into an offspring, population MUST be sorted */
 	getOffspring() {
-		const parent1 = this.select();
-		const parent2 = this.select();
+		const parent1 = this.getParent();
+		const parent2 = this.getParent();
 
 		return Network.crossOver(parent1, parent2, this.equal);
 	}
@@ -310,6 +310,4 @@ class Neat {
 		this.population = population;
 		this.popsize = population.length;
 	}
-}
-/* Export */
-module.exports = Neat;
+};

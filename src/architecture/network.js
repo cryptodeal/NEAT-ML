@@ -2,14 +2,14 @@
 const config = require('../config');
 const methods = require('../methods/methods');
 const multi = require('../multithreading/multi');
-const Neat = require('../neat');
 const Node = require('./node');
 const Connection = require('./connection');
 
 /* Easier letiable naming */
 let mutation = methods.mutation;
+var Neat;
 
-class Network {
+module.exports = class Network {
 	/* Constructs a network */
 	constructor(input, output) {
 		if (typeof input === 'undefined' || typeof output === 'undefined') {
@@ -854,6 +854,9 @@ class Network {
 		if (set[0].input.length !== this.input || set[0].output.length !== this.output) {
 			throw new Error('Dataset input/output size should be same as network input/output size!');
 		}
+		if (Neat == null) {
+			Neat = require('../neat');
+		}
 
 		/* Read the options */
 		options = options || {};
@@ -1389,7 +1392,4 @@ class Network {
 
 		return offspring;
 	}
-}
-
-/* Export */
-module.exports = Network;
+};

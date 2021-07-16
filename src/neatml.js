@@ -1,13 +1,13 @@
 const NeatML = {
 	architect: require('./architecture/architect'),
-	Network: require('./architecture/network'),
 	Neat: require('./neat'),
-	methods: require('./methods/methods'),
+	Network: require('./architecture/network'),
 	Connection: require('./architecture/connection'),
-	Group: require('./architecture/group'),
-	config: require('./config'),
 	Layer: require('./architecture/layer'),
+	Group: require('./architecture/group'),
 	Node: require('./architecture/node'),
+	methods: require('./methods/methods'),
+	config: require('./config'),
 	multi: require('./multithreading/multi')
 };
 

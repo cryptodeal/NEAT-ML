@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+//const CircularDependencyPlugin = require('circular-dependency-plugin');
 
 /* Update readme and read license */
 var version = require('./package.json').version;
@@ -42,6 +43,13 @@ module.exports = {
 		new CopyWebpackPlugin({
 			patterns: [{ from: 'src/multithreading/workers/node/worker.js', to: 'dist' }]
 		})
+		/*new CircularDependencyPlugin({
+			exclude: /a\.js|node_modules/,
+			include: /src/,
+			failOnError: true,
+			allowAsyncCycles: false,
+			cwd: process.cwd()
+		})*/
 	],
 	externals: ['child_process', 'os'],
 	node: {

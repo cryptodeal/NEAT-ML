@@ -6,6 +6,7 @@ specifiers:
   '@babel/preset-env': ^7.14.7
   assert: ^2.0.0
   chai: ^4.3.4
+  circular-dependency-plugin: ^5.2.2
   console-browserify: ^1.2.0
   copy-webpack-plugin: ^9.0.1
   eslint: ^7.30.0
@@ -26,6 +27,7 @@ devDependencies:
   '@babel/preset-env': 7.14.7_@babel+core@7.14.6
   assert: 2.0.0
   chai: 4.3.4
+  circular-dependency-plugin: 5.2.2_webpack@5.44.0
   console-browserify: 1.2.0
   copy-webpack-plugin: 9.0.1_webpack@5.44.0
   eslint: 7.30.0
@@ -1225,12 +1227,12 @@ packages:
   /@types/eslint-scope/3.7.1:
     resolution: {integrity: sha512-SCFeogqiptms4Fg29WpOTk5nHIzfpKCemSN63ksBQYKTcXoJEmJagV+DhVmbapZzY4/5YaOV1nZwrsU79fFm1g==}
     dependencies:
-      '@types/eslint': 7.2.14
+      '@types/eslint': 7.28.0
       '@types/estree': 0.0.50
     dev: true
 
-  /@types/eslint/7.2.14:
-    resolution: {integrity: sha512-pESyhSbUOskqrGcaN+bCXIQDyT5zTaRWfj5ZjjSlMatgGjIn3QQPfocAu4WSabUR7CGyLZ2CQaZyISOEX7/saw==}
+  /@types/eslint/7.28.0:
+    resolution: {integrity: sha512-07XlgzX0YJUn4iG1ocY4IX9DzKSmMGUs6ESKlxWhZRaa0fatIWaHWUVapcuGa8r5HFnTqzj+4OCjd5f7EZ/i/A==}
     dependencies:
       '@types/estree': 0.0.50
       '@types/json-schema': 7.0.8
@@ -1613,7 +1615,7 @@ packages:
     dependencies:
       caniuse-lite: 1.0.30001243
       colorette: 1.2.2
-      electron-to-chromium: 1.3.772
+      electron-to-chromium: 1.3.774
       escalade: 3.1.1
       node-releases: 1.1.73
     dev: true
@@ -1694,6 +1696,15 @@ packages:
   /chrome-trace-event/1.0.3:
     resolution: {integrity: sha512-p3KULyQg4S7NIHixdwbGX+nFHkoBiA4YQmyWtjb8XngSKV124nJmRysgAeujbUVb15vh+RvFUfCPqU7rXk+hZg==}
     engines: {node: '>=6.0'}
+    dev: true
+
+  /circular-dependency-plugin/5.2.2_webpack@5.44.0:
+    resolution: {integrity: sha512-g38K9Cm5WRwlaH6g03B9OEz/0qRizI+2I7n+Gz+L5DxXJAPAiWQvwlYNm1V1jkdpUv95bOe/ASm2vfi/G560jQ==}
+    engines: {node: '>=6.0.0'}
+    peerDependencies:
+      webpack: '>=4.0.1'
+    dependencies:
+      webpack: 5.44.0_webpack-cli@4.7.2
     dev: true
 
   /clean-stack/2.2.0:
@@ -1895,8 +1906,8 @@ packages:
       esutils: 2.0.3
     dev: true
 
-  /electron-to-chromium/1.3.772:
-    resolution: {integrity: sha512-X/6VRCXWALzdX+RjCtBU6cyg8WZgoxm9YA02COmDOiNJEZ59WkQggDbWZ4t/giHi/3GS+cvdrP6gbLISANAGYA==}
+  /electron-to-chromium/1.3.774:
+    resolution: {integrity: sha512-Fggh17Q1yyv1uMzq8Qn1Ci58P50qcRXMXd2MBcB9sxo6rJxjUutWcNw8uCm3gFWMdcblBO6mDT5HzX/RVRRECA==}
     dev: true
 
   /emoji-regex/8.0.0:
@@ -1944,7 +1955,7 @@ packages:
       is-negative-zero: 2.0.1
       is-regex: 1.1.3
       is-string: 1.0.6
-      object-inspect: 1.10.3
+      object-inspect: 1.11.0
       object-keys: 1.1.1
       object.assign: 4.1.2
       string.prototype.trimend: 1.0.4
@@ -2907,8 +2918,8 @@ packages:
       path-key: 3.1.1
     dev: true
 
-  /object-inspect/1.10.3:
-    resolution: {integrity: sha512-e5mCJlSH7poANfC8z8S9s9S2IN5/4Zb3aZ33f5s8YqoazCFzNLloLU8r5VCG+G7WoqLvAAZoVMcy3tp/3X0Plw==}
+  /object-inspect/1.11.0:
+    resolution: {integrity: sha512-jp7ikS6Sd3GxQfZJPyH3cjcbJF6GZPClgdV+EFygjFLQ5FmW/dRUnTd9PQ9k0JhoNDabWFbpF1yCdSWCC6gexg==}
     dev: true
 
   /object-is/1.1.5:
