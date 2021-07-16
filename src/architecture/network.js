@@ -15,6 +15,7 @@ module.exports = class Network {
 		if (typeof input === 'undefined' || typeof output === 'undefined') {
 			throw new Error('No input or output size given');
 		}
+		this.isType = 'Network';
 		this.input = input;
 		this.output = output;
 

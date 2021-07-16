@@ -53,9 +53,9 @@ class Layer {
 	/* Connects the nodes in this group to nodes in another group or just a node */
 	connect(target, method, weight) {
 		let connections;
-		if (target.isType === 'Layer' || target instanceof Node) {
+		if (target.isType === 'Group' || target.isType === 'Node') {
 			connections = this.output.connect(target, method, weight);
-		} else if (target instanceof Layer) {
+		} else if (target.isType === 'Layer') {
 			connections = target.input(this, method, weight);
 		}
 

@@ -5,6 +5,7 @@ const config = require('../config');
 
 class Node {
 	constructor(type) {
+		this.isType = 'Node';
 		this.bias = type === 'input' ? 0 : Math.random() * 0.2 - 0.1;
 		this.squash = methods.activation.LOGISTIC;
 		this.type = type || 'hidden';

@@ -1,5 +1,6 @@
 class Connection {
 	constructor(from, to, weight) {
+		this.isType = 'Connection';
 		this.from = from;
 		this.to = to;
 		this.gain = 1;
